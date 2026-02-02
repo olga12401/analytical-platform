@@ -1,0 +1,90 @@
+name: dbt CI (DEV)
+
+on:
+  push:
+    branches: [ developing ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  dbt-dev:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      # Install dbt Snowflake adapter
+      - name: Install dbt Snowflake adapter
+        run: |
+          pip install dbt-snowflake
+
+      # Validate required secrets are present (safe check)
+      - name: Validate Snowflake secrets
+        run: |
+          echo "SNOWFLAKE_ACCOUNT set: ${{ secrets.SNOWFLAKE_ACCOUNT != '' }}"
+          echo "SNOWFLAKE_DBT_DEV_USER set: ${{ secrets.SNOWFLAKE_DBT_DEV_USER != '' }}"
+          echo "SNOWFLAKE_DBT_DEV_ROLE set: ${{ secrets.SNOWFLAKE_DBT_DEV_ROLE != '' }}"
+          echo "SNOWFLAKE_DEV_DATABASE set: ${{ secrets.SNOWFLAKE_DEV_DATABASE != '' }}"
+          echo "SNOWFLAKE_DEV_WAREHOUSE set: ${{ secrets.SNOWFLAKE_DEV_WAREHOUSE != '' }}"
+          echo "SNOWFLAKE_DEV_SCHEMA set: ${{ secrets.SNOWFLAKE_DEV_SCHEMA != '' }}"
+          echo "SNOWFLAKE_DBT_DEV_PRIVATE_KEY set: ${{ secrets.SNOWFLAKE_DBT_DEV_PRIVATE_KEY != '' }}"
+          echo "SNOWFLAKE_DBT_DEV_PRIVATE_KEY_PASSPHRASE set: ${{ secrets.SNOWFLAKE_DBT_DEV_PRIVATE_KEY_PASSPHRASE != '' }}"
+
+      # Write Snowflake private key to temporary file
+      - name: Write Snowflake private key
+        run: |
+          mkdir -p ~/.dbt
+          echo "${{ secrets.SNOWFLAKE_DBT_DEV_PRIVATE_KEY }}" > ~/.dbt/dbt_dev_user.p8
+          chmod 600 ~/.dbt/dbt_dev_user.p8
+
+      # Validate private key file exists (safe check)
+      - name: Validate private key file
+        run: |
+          ls -l ~/.dbt
+          wc -l ~/.dbt/dbt_dev_user.p8
+
+      # Create dbt profiles.yml
+      - name: Create dbt profiles.yml
+        run: |
+          cat <<EOF > ~/.dbt/profiles.yml
+          analytical_platform:
+            target: dev
+            outputs:
+              dev:
+                type: snowflake
+                account: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+                user: ${{ secrets.SNOWFLAKE_DBT_DEV_USER }}
+                role: ${{ secrets.SNOWFLAKE_DBT_DEV_ROLE }}
+                database: ${{ secrets.SNOWFLAKE_DEV_DATABASE }}
+                warehouse: ${{ secrets.SNOWFLAKE_DEV_WAREHOUSE }}
+                schema: ${{ secrets.SNOWFLAKE_DEV_SCHEMA }}
+                private_key_path: /home/runner/.dbt/dbt_dev_user.p8
+                private_key_passphrase: "${{ secrets.SNOWFLAKE_DBT_DEV_PRIVATE_KEY_PASSPHRASE }}"
+                threads: 4
+          EOF
+
+      # Run dbt debug
+      - name: dbt debug
+        run: |
+          cd dbt
+          dbt debug
+
+      # Run dbt models
+      - name: dbt run
+        run: |
+          cd dbt
+          dbt run
+
+      # Run dbt tests
+      - name: dbt test
+        run: |
+          cd dbt
+          dbt test
