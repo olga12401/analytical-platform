@@ -1,0 +1,11 @@
+version: 2
+
+models:
+  - name: fct_order_flags
+    columns:
+      - name: order_id
+        tests:
+          - not_null
+
+
+

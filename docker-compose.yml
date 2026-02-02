@@ -1,0 +1,14 @@
+services:
+  dbt:
+    build:
+      context: ./dbt
+    container_name: dbt
+    volumes:
+      - ./dbt:/usr/app
+      - ~/.snowflake_keys:/root/.snowflake_keys
+    env_file:
+      - .env
+    entrypoint: ["/bin/bash"]
+    command: ["-c", "tail -f /dev/null"]
+
+

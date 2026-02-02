@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: stg_orders
+    description: Cleaned and standardized order line data.
+    columns:
+      - name: row_id
+        tests:
+          - not_null
+          - unique
+
+      - name: order_id
+        tests:
+          - not_null
+
+  - name: stg_returns
+    description: Return status per order.
+
+  - name: stg_managers
+    description: Region to manager lookup table.

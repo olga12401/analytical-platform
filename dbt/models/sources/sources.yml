@@ -1,0 +1,34 @@
+version: 2
+
+sources:
+  - name: raw
+    database: ANALYTICS_DEV
+    schema: RAW
+    description: |
+      Raw data ingested from S3 into Snowflake using COPY INTO.
+      This layer represents the source of truth and contains no transformations.
+
+    tables:
+      - name: orders
+        description: Raw orders data from Superstore dataset.
+        loaded_at_field: _etl_loadtime
+        freshness:
+          warn_after: { count: 1, period: day }
+
+        columns:
+          - name: row_id
+            description: Unique identifier of the order line.
+          - name: order_id
+            description: Business order identifier.
+          - name: order_date
+            description: Date when the order was placed.
+          - name: sales
+            description: Revenue for the order line.
+          - name: profit
+            description: Profit for the order line.
+
+      - name: returns
+        description: Raw return status per order.
+
+      - name: managers
+        description: Mapping between region and regional manager.

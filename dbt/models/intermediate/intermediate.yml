@@ -1,0 +1,9 @@
+version: 2
+
+models:
+  - name: int_orders_flags
+    columns:
+      - name: row_id
+        tests:
+          - not_null
+          - unique

@@ -1,0 +1,40 @@
+name: analytical_platform
+version: "1.0"
+config-version: 2
+
+profile: analytical_platform
+
+model-paths: ["models"]
+analysis-paths: ["analysis"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  analytical_platform:
+
+    # Default (safety): if anything doesn't match, don't create DBT_STAGING
+    +schema: STAGING
+    +materialized: view
+
+    # Your staging layer
+    staging:
+      +schema: STAGING
+      +materialized: view
+
+    # IMPORTANT: your warning says intermediate doesn't exist
+    # Keep this ONLY if you actually have models/intermediate/*
+    intermediate:
+      +schema: INTERMEDIATE
+      +materialized: view
+
+    # Your marts
+    marts:
+      +schema: ANALYTICS
+      +materialized: table
+
