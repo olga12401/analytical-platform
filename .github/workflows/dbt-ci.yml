@@ -66,7 +66,7 @@ jobs:
                 database: ${{ secrets.SNOWFLAKE_DEV_DATABASE }}
                 warehouse: ${{ secrets.SNOWFLAKE_DEV_WAREHOUSE }}
                 schema: ${{ secrets.SNOWFLAKE_DEV_SCHEMA }}
-                private_key_path: ~/.dbt/dbt_dev_user.p8
+                private_key_path: /home/runner/.dbt/dbt_dev_user.p8
                 private_key_passphrase: "${{ secrets.SNOWFLAKE_DBT_DEV_PRIVATE_KEY_PASSPHRASE }}"
                 threads: 4
           EOF
