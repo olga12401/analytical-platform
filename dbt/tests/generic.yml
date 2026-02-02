@@ -1,0 +1,8 @@
+version: 2
+
+models:
+  - name: orders_summary
+    columns:
+      - name: region
+        tests:
+          - not_null

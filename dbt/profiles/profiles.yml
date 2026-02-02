@@ -1,0 +1,23 @@
+analytical_platform:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+
+      user: DBT_DEV_USER
+      role: DBT_DEV_ROLE
+
+      database: ANALYTICS_DEV
+      warehouse: DEV_WH
+
+      # This is just a base value; dbt_project.yml overrides it
+      schema: DBT
+
+      threads: 4
+
+      private_key_path: /root/.snowflake_keys/dbt_dev_user.p8
+      private_key_passphrase: "{{ env_var('DBT_DEV_PRIVATE_KEY_PASSPHRASE') }}"
+
+
+

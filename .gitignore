@@ -1,0 +1,6 @@
+cat <<EOF > .gitignore
+.env
+target/
+dbt_packages/
+logs/
+EOF
