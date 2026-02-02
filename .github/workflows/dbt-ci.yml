@@ -43,7 +43,7 @@ jobs:
       - name: Create dbt profiles.yml
         run: |
           cat <<EOF > ~/.dbt/profiles.yml
-          analytics:
+          analytical_platform:
             target: dev
             outputs:
               dev:
