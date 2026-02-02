@@ -1,0 +1,64 @@
+name: dbt CI (DEV)
+
+on:
+  push:
+    branches: [ developing ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  dbt-dev:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dbt Snowflake adapter
+        run: |
+          pip install dbt-snowflake
+
+      - name: Write Snowflake private key
+        run: |
+          mkdir -p ~/.dbt
+          echo "${{ secrets.SNOWFLAKE_DBT_DEV_PRIVATE_KEY }}" > ~/.dbt/dbt_dev_user.p8
+          chmod 600 ~/.dbt/dbt_dev_user.p8
+
+      - name: Create dbt profiles.yml (DEV)
+        run: |
+          cat <<EOF > ~/.dbt/profiles.yml
+          analytical_platform:
+            target: dev
+            outputs:
+              dev:
+                type: snowflake
+                account: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+                user: ${{ secrets.SNOWFLAKE_DBT_DEV_USER }}
+                role: ${{ secrets.SNOWFLAKE_DBT_DEV_ROLE }}
+                database: ${{ secrets.SNOWFLAKE_DEV_DATABASE }}
+                warehouse: ${{ secrets.SNOWFLAKE_DEV_WAREHOUSE }}
+                schema: ${{ secrets.SNOWFLAKE_DEV_SCHEMA }}
+                private_key_path: ~/.dbt/dbt_dev_user.p8
+                private_key_passphrase: "${{ secrets.SNOWFLAKE_DBT_DEV_PRIVATE_KEY_PASSPHRASE }}"
+                threads: 4
+          EOF
+
+      - name: dbt debug
+        run: |
+          cd dbt
+          dbt debug
+
+      - name: dbt run (DEV)
+        run: |
+          cd dbt
+          dbt run
+
+      - name: dbt test (DEV)
+        run: |
+          cd dbt
+          dbt test
